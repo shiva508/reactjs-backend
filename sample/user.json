@@ -1,0 +1,14 @@
+{
+  "userId": 0,
+  "userName": "shiva508",
+  "email": "dasarishiva1@gmail.com",
+  "firstName": "Dasari",
+  "lastName": "Shiva",
+  "password": "Shiva",
+  "roles": [
+    {
+      "roleId": 3,
+      "name": "string"
+    }
+  ]
+}

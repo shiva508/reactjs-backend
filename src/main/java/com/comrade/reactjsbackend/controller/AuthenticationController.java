@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
@@ -24,7 +26,7 @@ public class AuthenticationController {
     private JwtService jwtService;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest){
+    public Map<String, String> login(@RequestBody LoginRequest loginRequest){
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
                         loginRequest.getPassword()
@@ -34,8 +36,8 @@ public class AuthenticationController {
             AuthUser authUser = (AuthUser) authentication.getPrincipal();
             String token = jwtService.tokenGenerator(authUser);
             System.out.println(token);
-            return token;
+            return Map.of("token",token);
         }
-return null;
+        return null;
     }
 }

@@ -1,7 +1,9 @@
 package com.comrade.reactjsbackend.config.entrypoint;
 
 import java.io.IOException;
+import java.util.Date;
 
+import com.comrade.reactjsbackend.model.exception.AccessDeniedResponse;
 import com.comrade.reactjsbackend.model.exception.InvalidLoginResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +20,9 @@ public class JWTAthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
 
-        InvalidLoginResponse loginResponse=new InvalidLoginResponse();
+        AccessDeniedResponse loginResponse=new AccessDeniedResponse();
+        loginResponse.setMessage(authException.getMessage());
+        loginResponse.setTimeStamp(new Date());
         String jsonLoginResponse=new Gson().toJson(loginResponse);
         response.setContentType("application/json");
         response.setStatus(401);

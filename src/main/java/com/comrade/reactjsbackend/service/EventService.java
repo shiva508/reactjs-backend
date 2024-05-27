@@ -7,6 +7,6 @@ import java.util.List;
 
 
 public interface EventService {
-    public Event save(Event event);
-    public List<Event> all();
+    Event save(Event event);
+    List<Event> all();
 }

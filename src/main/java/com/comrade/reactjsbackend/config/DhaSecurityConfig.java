@@ -1,6 +1,8 @@
 package com.comrade.reactjsbackend.config;
 
+import com.comrade.reactjsbackend.config.entrypoint.JWTAthenticationEntryPoint;
 import com.comrade.reactjsbackend.config.filter.JwtAuthenticationFilter;
+import com.comrade.reactjsbackend.config.handler.CustomAccessDeniedHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -33,18 +35,29 @@ public class DhaSecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    @Autowired
+    private JWTAthenticationEntryPoint jwtAthenticationEntryPoint;
+
 
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize.requestMatchers("/api/v1/user/**","/api/v1/role/**","/api/v1/auth/**")
+                .authorizeHttpRequests(authorize ->
+                            authorize.requestMatchers("/api/v1/user/**","/api/v1/role/**","/api/v1/auth/**")
                          .permitAll()
-                        .requestMatchers("/api/v1/event/**").hasRole("USRE")
+                        .requestMatchers("/api/v1/event/**").hasRole("USER")
                          .anyRequest().authenticated())
                 .sessionManagement(hssmc -> hssmc.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
+                .exceptionHandling(hsehc ->{
+                    hsehc.accessDeniedHandler(customAccessDeniedHandler);
+                    hsehc.authenticationEntryPoint(jwtAthenticationEntryPoint);
+                })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

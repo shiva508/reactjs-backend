@@ -2,8 +2,7 @@ package com.comrade.reactjsbackend.service.security;
 
 import com.comrade.reactjsbackend.config.properties.SecurityProperties;
 import com.comrade.reactjsbackend.model.AuthUser;
-import com.comrade.reactjsbackend.model.UserProfile;
-import com.comrade.reactjsbackend.model.exception.JwtException;
+import com.comrade.reactjsbackend.model.exception.JwtCustomException;
 import com.comrade.reactjsbackend.model.exception.RecordNotFoundException;
 import com.comrade.reactjsbackend.util.DhaConstants;
 import io.jsonwebtoken.*;
@@ -12,13 +11,14 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
-
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -30,7 +30,12 @@ public class JwtService {
     public String tokenGenerator(AuthUser authUser){
         try {
             Claims claims = Jwts.claims().setSubject(authUser.getEmail());
-            claims.putAll(Map.of(DhaConstants.FIRST_NAME,authUser.getFirstName(),DhaConstants.LAST_NAME,authUser.getLastName()));
+            var roles = authUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+            claims.putAll(Map.of(DhaConstants.FIRST_NAME,authUser.getFirstName(),
+                                 DhaConstants.LAST_NAME,authUser.getLastName(),
+                                 DhaConstants.EMAIL,authUser.getEmail(),
+                                 DhaConstants.USER_NAME,authUser.getUsername(),
+                                 DhaConstants.ROLES,roles));
             long currentTime = System.currentTimeMillis();
             Date tokenExpirationDuration = new Date(currentTime + TimeUnit.MINUTES.toMillis(securityProperties.getExpirationDuration()));
             return Jwts.builder()
@@ -46,7 +51,7 @@ public class JwtService {
     }
 
     public JwtParser jwtTokenParser(){
-        return Jwts.parser().setSigningKey(securityProperties.getSecretKey());
+        return Jwts.parserBuilder().setSigningKey(generateSignInKey()).build();
     }
 
     public Claims claimsParser(String token){
@@ -70,7 +75,7 @@ public class JwtService {
             }
             return null;
         } catch (Exception exception){
-            throw new JwtException(exception.getMessage());
+            throw new JwtCustomException(exception.getMessage());
         }
     }
 
@@ -78,7 +83,7 @@ public class JwtService {
         try {
             return claims.getExpiration().after(new Date(System.currentTimeMillis()));
         }catch (Exception exception){
-            throw new JwtException(exception.getMessage());
+            throw new JwtCustomException(exception.getMessage());
         }
     }
 
@@ -94,29 +99,17 @@ public class JwtService {
         try {
             jwtTokenParser().parseClaimsJws(jwtToken);
             return true;
-		/*} catch (SignatureException e) {
-			//throw new JwtException("Signature Failed");
-		}catch (MalformedJwtException e) {
-			//throw new JwtException("Mal formed Jwt ");
-		}catch (ExpiredJwtException e) {
-			//throw new JwtException("Jwt Expired");
-		}catch (UnsupportedJwtException e) {
-			//throw new JwtException("Jwt Unsupported");
-		}catch (IllegalArgumentException e) {
-			//throw new JwtException("IllegalArgument");
-		}*/
-        }catch (SignatureException ex){
-            System.out.println("Invalid JWT Signature");
-        }catch (MalformedJwtException ex){
-            System.out.println("Invalid JWT Token");
-        }catch (ExpiredJwtException ex){
-            System.out.println("Expired JWT token");
-        }catch (UnsupportedJwtException ex){
-            System.out.println("Unsupported JWT token");
-        }catch (IllegalArgumentException ex){
-            System.out.println("JWT claims string is empty");
+        } catch (SignatureException ex){
+            throw new JwtCustomException("Invalid JWT Signature");
+        } catch (MalformedJwtException ex){
+            throw new JwtCustomException("Invalid JWT Token");
+        } catch (ExpiredJwtException ex){
+            throw new JwtCustomException("Expired JWT token");
+        } catch (UnsupportedJwtException ex){
+            throw new JwtCustomException("Unsupported JWT token");
+        } catch (IllegalArgumentException | JwtException ex){
+            throw new JwtCustomException("JWT claims string is empty");
         }
-        return false;
     }
 
     public Key generateSignInKey() {

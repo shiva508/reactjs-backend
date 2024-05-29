@@ -32,8 +32,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String jwtToken = jwtTokenExtractorHttpServletRequest(request);
-
+            log.info("Request received {}",jwtToken);
             if (jwtToken == null || !jwtToken.startsWith("Bearer ")) {
+                log.info("Request received no token ");
                 filterChain.doFilter(request, response);
                 return;
             }

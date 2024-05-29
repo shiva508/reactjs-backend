@@ -25,6 +25,6 @@ reactjs:
     methods: DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT
   security:
     secret-key: dhaasajsjajsjashajsjajsashawueu8wue8uuwuiwejwnj3848348723723723878329490
-    expiration-duration: 300000
+    expiration-duration: 60
     token-header: Authorization
     token-prefix: "Bearer "

@@ -38,7 +38,7 @@ public class JwtService {
                                  DhaConstants.USER_NAME,authUser.getUsername(),
                                  DhaConstants.ROLES,roles));
             long currentTime = System.currentTimeMillis();
-            Date tokenExpirationDuration = new Date(currentTime + TimeUnit.MICROSECONDS.toMillis(securityProperties.getExpirationDuration()));
+            Date tokenExpirationDuration = new Date(currentTime + TimeUnit.MINUTES.toMillis(securityProperties.getExpirationDuration()));
             return Jwts.builder()
                     .setClaims(claims)
                     .setIssuedAt(new Date(currentTime))

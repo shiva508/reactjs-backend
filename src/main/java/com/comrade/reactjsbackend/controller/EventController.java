@@ -22,7 +22,7 @@ public class EventController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    //@PreAuthorize("hasRole('SUPER_ADMIN')")
     public List<Event> all(){
         return eventService.all();
     }

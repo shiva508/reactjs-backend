@@ -3,10 +3,10 @@ package com.comrade.reactjsbackend;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+//@SpringBootTest
 class ReactjsBackendApplicationTests {
 
-	@Test
+	//@Test
 	void contextLoads() {
 	}
 

@@ -2,18 +2,19 @@ package com.comrade.reactjsbackend.service.security;
 
 import com.comrade.reactjsbackend.config.properties.SecurityProperties;
 import com.comrade.reactjsbackend.model.AuthUser;
+import com.comrade.reactjsbackend.model.LoginResponse;
 import com.comrade.reactjsbackend.model.exception.JwtCustomException;
 import com.comrade.reactjsbackend.model.exception.RecordNotFoundException;
 import com.comrade.reactjsbackend.util.DhaConstants;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class JwtService {
                                  DhaConstants.USER_NAME,authUser.getUsername(),
                                  DhaConstants.ROLES,roles));
             long currentTime = System.currentTimeMillis();
-            Date tokenExpirationDuration = new Date(currentTime + TimeUnit.MINUTES.toMillis(securityProperties.getExpirationDuration()));
+            Date tokenExpirationDuration = new Date(currentTime + TimeUnit.MICROSECONDS.toMillis(securityProperties.getExpirationDuration()));
             return Jwts.builder()
                     .setClaims(claims)
                     .setIssuedAt(new Date(currentTime))
@@ -47,15 +48,14 @@ public class JwtService {
         } catch (Exception exception){
             throw new RecordNotFoundException(exception.getMessage());
         }
-
     }
 
     public JwtParser jwtTokenParser(){
         return Jwts.parserBuilder().setSigningKey(generateSignInKey()).build();
     }
 
-    public Claims claimsParser(String token){
-        return jwtTokenParser().parseClaimsJws(token)
+    public Claims claimsParser(String jwtToken){
+        return jwtTokenParser().parseClaimsJws(jwtToken)
                                .getBody();
     }
 
@@ -87,8 +87,8 @@ public class JwtService {
         }
     }
 
-    public String extractEmail(String token){
-        return claimsParser(token).getSubject();
+    public String extractEmail(String jwtToken){
+        return claimsParser(jwtToken).getSubject();
     }
 
     public List<String> extractRoles(Claims claims){
@@ -113,8 +113,17 @@ public class JwtService {
     }
 
     public Key generateSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(securityProperties.getSecretKey());
-        return Keys.hmacShaKeyFor(keyBytes);
+        return new SecretKeySpec(Base64.getDecoder()
+                                       .decode(securityProperties.getSecretKey()), SignatureAlgorithm.HS256.getJcaName());
+    }
+
+    public LoginResponse buildLoginResponse(String jwtToken){
+        Claims claims = claimsParser(jwtToken);
+        return LoginResponse.builder()
+                .expiresAt(claims.getExpiration())
+                .issuedAt(claims.getIssuedAt())
+                .roles((List<String>) claims.get(DhaConstants.ROLES))
+                .build();
     }
 
 }

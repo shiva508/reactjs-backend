@@ -30,4 +30,6 @@ public class LoginResponse implements Serializable {
     private List<String> roles;
 
     private String token;
+
+    private Boolean isAuthorised;
 }

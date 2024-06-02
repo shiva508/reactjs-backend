@@ -14,4 +14,5 @@ import java.util.Date;
 public class AccessDeniedResponse {
     private Date timeStamp;
     private String message;
+    private int statusCode;
 }

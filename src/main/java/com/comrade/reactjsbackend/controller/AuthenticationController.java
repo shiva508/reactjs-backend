@@ -40,6 +40,7 @@ public class AuthenticationController {
             loginResponse.setFirstName(authUser.getFirstName());
             loginResponse.setLastName(authUser.getLastName());
             loginResponse.setToken(jwtToken);
+            loginResponse.setIsAuthorised(true);
             return loginResponse;
         }
         return null;

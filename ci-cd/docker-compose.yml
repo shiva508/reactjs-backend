@@ -32,6 +32,16 @@ services:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
       - DHA
+  reactjsbackend:
+    container_name: reactjs-backend
+    image: dasari508201/reactjs-backend:0.0.1
+    ports:
+      - "8080:8080"
+    networks:
+      - DHA
+    depends_on:
+      - dha
+
 networks:
   DHA:
     driver: bridge

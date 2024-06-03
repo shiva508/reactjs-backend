@@ -77,7 +77,8 @@ public class DhaSecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer(){
-        return web -> web.ignoring().requestMatchers("/swagger-ui/**", "/v3/api-docs/**","/swagger-ui.html/**","/api/v1/**");
+        //"/swagger-ui/**", "/v3/api-docs/**","/swagger-ui.html/**","/api/v1/**"
+        return web -> web.ignoring().requestMatchers("/swagger-ui/**", "/v3/api-docs/**","/swagger-ui.html/**");
     }
 
     @Bean
